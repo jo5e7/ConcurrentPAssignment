@@ -143,20 +143,12 @@ class Car extends Thread {
                 
                 newpos = nextPos(curpos);
                 
-                smatrix[newpos.row][newpos.col].P();
+                
                 //Check for alley enter
-                if (alley.isNextAlleyEntry(no ,newpos)) {
-                    mutex.P();
+                if (!alley.isAlley(curpos) && alley.isAlley(newpos)) {
                     alley.enter(no);
-                    mutex.V();
                 }
-                //Check for alley leave
-                if (alley.isNextAlleyExit(no, newpos)) {
-                    mutex.P();
-                    alley.leave(no);
-                    mutex.V();
-                }
-               
+               smatrix[newpos.row][newpos.col].P();
                 //  Move to new position 
                 cd.clear(curpos);
                 cd.mark(curpos,newpos,col,no);
@@ -165,6 +157,12 @@ class Car extends Thread {
                 cd.mark(newpos,col,no);
                 
                 smatrix[curpos.row][curpos.col].V();
+                
+                
+                if ( alley.isAlley(curpos) && !alley.isAlley(newpos)) {
+                    alley.leave(no);
+                }
+                
                 curpos = newpos;
             }
 
@@ -180,122 +178,103 @@ class Car extends Thread {
 class Alley{
 
     
-    /*Pos a01 = new Pos(0, 1); Pos a11 = new Pos(1, 1);
-    Pos a02 = new Pos(0, 2); Pos a12 = new Pos(1, 2);
-    Pos a03 = new Pos(0, 3);
-    Pos a04 = new Pos(0, 4);
-    Pos a05 = new Pos(0, 5);
-    Pos a06 = new Pos(0, 6);
-    Pos a07 = new Pos(0, 7);
-    Pos a08 = new Pos(0, 8);
-    Pos a09 = new Pos(0, 9);
-    Pos a010 = new Pos(0, 10); Pos a110 = new Pos(1, 10);
-    Pos a011 = new Pos(0, 11); Pos a111 = new Pos(1, 11);
-    */
     
-   /* Pos a11 = new Pos(1, 1);
-    Pos a12 = new Pos(1, 2);
-    Pos a110 = new Pos(1, 10);
-    Pos a111 = new Pos(1, 11);
+    Pos a10 = new Pos(1, 0); Pos a11 = new Pos(1, 1);Pos a12 = new Pos(1, 2);
+    Pos a20 = new Pos(2, 0);
+    Pos a30 = new Pos(3, 0);
+    Pos a40 = new Pos(4, 0);
+    Pos a50 = new Pos(5, 0);
+    Pos a60 = new Pos(6, 0);
+    Pos a70 = new Pos(7, 0);
+    Pos a80 = new Pos(8, 0);
+    Pos a90 = new Pos(9, 0); 
+    Pos alleyPos[] = {a10, a20, a30, a40, a50, a60, a70, a80, a90, a11, a12};
     
-    Pos a21 = new Pos(2, 1);
-    Pos a22 = new Pos(2, 2);
-    Pos a210 = new Pos(2, 10);
-    Pos a211 = new Pos(2, 11);
+   
     
-    Pos a31 = new Pos(3, 1);
-    Pos a32 = new Pos(3, 2);
-    Pos a310 = new Pos(3, 10);
-    Pos a311 = new Pos(3, 11);*/
-    
-    Pos a23 = new Pos(1, 3);
+    /*Pos a23 = new Pos(1, 3);
     Pos a33 = new Pos(2, 3);
     Pos a100 = new Pos(10, 0);
-    
-    Semaphore [][] smatrix;
     Pos alleyTopPos[] = {a23, a33};
-    Pos alleyButtonPos[] = {a100};
+    Pos alleyButtonPos[] = {a100};*/
+    
     int one2four = 0;
     int five2eight = 0;
             
     
     Semaphore mutex = new Semaphore(1);
+    Semaphore mutex2 = new Semaphore(1);
+    Semaphore e = new Semaphore(1);
    public void enter(int i) throws InterruptedException{
-       //mutex.P();
+       
        if (i == 1|| i == 2 || i == 3|| i == 4 ) {
-           if (one2four == 0) {
-               //block
-               smatrix[10][0].P();
-               Util.println("Block Alley" + String.valueOf(i));
-           }
+           mutex.P();
            one2four += 1;
-       } else {
-           if (five2eight == 0) {
+           if (one2four == 1) {
                //block
-               smatrix[1][3].P();
-               smatrix[2][3].P();
+               e.P();
                Util.println("Block Alley" + String.valueOf(i));
+               Util.println("e.P()");
            }
+           mutex.V();
+       } 
+       if(i == 5|| i == 6 || i == 7|| i == 8) {
+           mutex2.P();
            five2eight += 1;
+           if (five2eight == 1) {
+               //block
+               e.P();
+               Util.println("Block Alley" + String.valueOf(i));
+               Util.println("e.P()");
+           }
+           mutex2.V();
        }
-       //mutex.V();
+       
    } 
 
    public void leave(int i) throws InterruptedException{
-       //mutex.P();
        if (i == 1|| i == 2 || i == 3|| i == 4 ) {
+           mutex.P();
            one2four -= 1;
+           Util.println(String.valueOf(one2four));
            if (one2four == 0) {
                //unblock
-               smatrix[10][0].V();
+               e.V();
+               Util.println("e.V()");
            }
-       } else {
+           mutex.V();
+       } 
+       if (i == 5|| i == 6 || i == 7|| i == 8){
+           mutex2.P();
            five2eight -= 1;
            if (five2eight == 0) {
                //unblock
-               smatrix[1][3].V();
-               smatrix[2][3].V();
+               e.V();
+               Util.println("e.v()");
            }
+           mutex2.V();
        }
-       //mutex.V();
+       
    }
    
-   public boolean isNextAlleyEntry(int i,Pos nextPos){
-       if (i == 1|| i == 2 || i == 3|| i == 4 ) {
-           for (Pos alleyPo : alleyTopPos) {
-            if (nextPos.equals(alleyPo)) {
-                Util.println("Entro al alley" + String.valueOf(i));
-                return true;
-            }
-        }
-       } else {
-           for (Pos alleyPo : alleyButtonPos) {
-            if (nextPos.equals(alleyPo)) {
-                Util.println("Entro al alley" + String.valueOf(i));
-                return true;
-            }
-        }
-           
-        }
+   public boolean isAlley(Pos nextPos){
+       for (Pos alleyPo : alleyPos) {
+           if (nextPos.equals(alleyPo)) {
+               return true;
+           }
+       }
        return false;
    }
    
    public boolean isAlleyEmpty(int i,Pos nextPos){
        if (i == 1|| i == 2 || i == 3|| i == 4 ) {
-           for (Pos alleyPo : alleyButtonPos) {
-            if (nextPos.equals(alleyPo)) {
-                Util.println("Salio al alley" + String.valueOf(i));
-                return true;
-            }
-        }
+           if (five2eight == 0) {
+               return true;
+           }
        } else {
-           for (Pos alleyPo : alleyTopPos) {
-            if (nextPos.equals(alleyPo)) {
-                Util.println("Salio al alley" + String.valueOf(i));
-                return true;
-            }
-        }
-           
+           if (one2four == 0) {
+               return true;
+           }
         }
        return false;
    }
@@ -309,7 +288,6 @@ public class CarControl implements CarControlI{
     Gate[] gate;              // Gates
     
     Semaphore [][] smatrix = new Semaphore[11][12];
-    Semaphore [][] Nsmatrix = new Semaphore[11][12];
     Alley alley = new Alley();
     Semaphore mutex = new Semaphore(1);
        
@@ -321,17 +299,14 @@ public class CarControl implements CarControlI{
         for (int i = 0; i <= 10; i++) {
             for (int j = 0; j <= 11; j++) {
                 smatrix [i][j] = new Semaphore(1);
-                Nsmatrix [i][j] = new Semaphore(1);
             }
         }
         
-        alley.smatrix = smatrix;
         
         for (int no = 0; no < 9; no++) {
             gate[no] = new Gate();
             
             car[no] = new Car(no,cd,gate[no]);
-            car[no].Nsmatrix = this.Nsmatrix;
             car[no].smatrix = this.smatrix;
             car[no].alley = this.alley;
             car[no].mutex = mutex;
