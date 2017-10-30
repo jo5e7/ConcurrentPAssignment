@@ -127,7 +127,7 @@ class Car extends Thread {
        //Create a matrix of semaphore
        
         try {
-            System.out.println(String.valueOf(barpos));
+            //System.out.println(String.valueOf(barpos));
             speed = chooseSpeed();
             curpos = startpos;
             cd.mark(curpos,col,no);
@@ -150,7 +150,9 @@ class Car extends Thread {
                 
                 //Check for barrier
                 if (barrier.isOn && curpos.equals(barpos)) {
-                    
+                    //barrier.carSemaphores[no].V();
+                    barrier.sArrive[no].V();
+                    barrier.sContinue[no].P();
                 }
                 
                smatrix[newpos.row][newpos.col].P();
@@ -236,8 +238,12 @@ public class CarControl implements CarControlI{
     }
 
     public void barrierOff() { 
-        barrier.off();
-        //cd.println("Barrier Off not implemented in this version");
+        try {
+            barrier.off();
+            //cd.println("Barrier Off not implemented in this version");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CarControl.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void barrierShutDown() { 

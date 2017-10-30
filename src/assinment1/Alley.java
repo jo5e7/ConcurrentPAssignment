@@ -5,7 +5,6 @@
  * and open the template in the editor.
  */
 
-import assinment1.Semaphore;
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.Util;
 
 /**
@@ -48,8 +47,8 @@ public class Alley{
            if (one2four == 1) {
                //block
                e.P();
-               Util.println("Block Alley" + String.valueOf(i));
-               Util.println("e.P()");
+               //Util.println("Block Alley" + String.valueOf(i));
+               //Util.println("e.P()");
            }
            mutex.V();
        } 
@@ -59,8 +58,8 @@ public class Alley{
            if (five2eight == 1) {
                //block
                e.P();
-               Util.println("Block Alley" + String.valueOf(i));
-               Util.println("e.P()");
+               //Util.println("Block Alley" + String.valueOf(i));
+               //Util.println("e.P()");
            }
            mutex2.V();
        }
@@ -71,11 +70,11 @@ public class Alley{
        if (i == 1|| i == 2 || i == 3|| i == 4 ) {
            mutex.P();
            one2four -= 1;
-           Util.println(String.valueOf(one2four));
+           //Util.println(String.valueOf(one2four));
            if (one2four == 0) {
                //unblock
                e.V();
-               Util.println("e.V()");
+               //Util.println("e.V()");
            }
            mutex.V();
        } 
@@ -85,7 +84,7 @@ public class Alley{
            if (five2eight == 0) {
                //unblock
                e.V();
-               Util.println("e.v()");
+               //Util.println("e.v()");
            }
            mutex2.V();
        }
