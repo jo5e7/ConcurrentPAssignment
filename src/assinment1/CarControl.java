@@ -155,6 +155,7 @@ class Car extends Thread {
                     barrier.sContinue[no].P();
                 }
                 
+                // MAtrix mutual exclusion
                smatrix[newpos.row][newpos.col].P();
                 //  Move to new position 
                 cd.clear(curpos);
